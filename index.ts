@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { generateDomainSeedwork } from './codeGenerator/seedwork/domain';
+import { generateRouters } from './codeGenerator/infra/routers';
 
-interface EntityItem {
+export interface EntityItem {
   name: string;
   type: string;
   default_value?: any;
@@ -122,5 +123,6 @@ generateDomainSeedwork()
 tables.forEach(table => {
   generateEntity(table.name, table.items);
   generateRepository(table.name);
+  generateRouters(table.name, table.items);
 });
 generateMain(tables.map(table => table.name));

@@ -1,15 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import { generateFile } from "../fileGenerator";
 
-const generateFile = (filename: string, content: string): void => {
-  const dir = path.dirname(filename);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(filename, content, 'utf8');
-};
-
-// Generate Entities
 const generateEntities = (): void => {
   const filename = 'src/__seedwork/domain/entities.ts';
   generateFile(filename, `

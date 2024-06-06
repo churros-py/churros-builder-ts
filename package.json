@@ -1,0 +1,13 @@
+{
+  "name": "churros-builder-ts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:churros-py/churros-builder-ts.git",
+  "author": "gustavovalle <gustavo.vallerp@hotmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

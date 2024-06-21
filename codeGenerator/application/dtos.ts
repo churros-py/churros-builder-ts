@@ -1,148 +1,91 @@
-import { EntityItem } from '../baseRequest';
-import { generateFile } from '../fileGenerator';
+import { EntityItem, capitalize } from '../baseRequest';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const builtinsTypes: string[] = ['string', 'number', 'boolean', 'Date'];
 
 export const generateDtos = (entityName: string, items: EntityItem[]): void => {
   const filename = `src/${entityName}/application/dtos.ts`;
-  const entityNameCapitalized = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+  const dirname = path.dirname(filename);
 
-  let content = `// -*- coding: utf-8 -*-
-import { IsInt, IsString, IsBoolean, IsDate } from 'class-validator';
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true });
+  }
 
-`;
+  let imports = `import { z } from 'zod';\n`;
 
-  items.forEach(attribute => {
+  for (const attribute of items) {
     const typeOfField = attribute.type;
 
-    if (builtinsTypes.includes(typeOfField)) {
-      return;
+    if (typeOfField in builtinsTypes) {
+      continue;
     }
 
-    if (typeOfField === 'Date') {
-      content += `import { Type } from 'class-transformer';\n`;
-      return;
+    if (typeOfField === 'datetime') {
+      continue;
     }
 
-    content += `import { ${typeOfField} } from 'src/${typeOfField.toLowerCase()}/application/dtos';\n`;
-  });
+  }
 
-  content += `\nexport class ${entityNameCapitalized}Dto {
-  @IsInt()
-  id: number;`;
+  const dtoClasses = (className: string, includeId: boolean): string => {
+    let classDef = `export const ${className} = z.object({\n`;
 
-  items.forEach(attribute => {
-    const field = attribute.name;
-    const typeOfField = attribute.type;
-
-    if (field === 'id') {
-      return;
+    if (includeId) {
+      classDef += `  id: z.number(),\n`;
     }
 
-    let validator;
-    switch (typeOfField) {
-      case 'string':
-        validator = '@IsString()';
-        break;
-      case 'number':
-        validator = '@IsInt()';
-        break;
-      case 'boolean':
-        validator = '@IsBoolean()';
-        break;
-      case 'Date':
-        validator = '@IsDate()';
-        content += `\n  @Type(() => Date)`;
-        break;
-      default:
-        validator = `@ValidateNested()`;
-        break;
+    for (const attribute of items) {
+      const field = attribute.name;
+      const typeOfField = attribute.type;
+      const relationship = attribute.relationship;
+
+      if (field === 'id' && includeId) {
+        continue;
+      }
+
+      if (relationship) {
+        classDef += `  ${field}: ${mapRelationship(relationship, typeOfField)},\n`;
+      } else {
+        classDef += `  ${field}: ${mapType(typeOfField)},\n`;
+      }
     }
 
-    content += `
-  ${validator}
-  ${field}: ${typeOfField};`;
-  });
+    classDef += `});\n`;
 
-  content += `\n}\n\n`;
+    return classDef;
+  };
 
-  // Create Model Input
-  content += `export class Create${entityNameCapitalized}Input {
-  @IsInt()
-  id: number;`;
+  const content = `${imports}\n${dtoClasses(capitalize(entityName), true)}\n${dtoClasses(`Create${capitalize(entityName)}Input`, false)}\n${dtoClasses(`Update${capitalize(entityName)}Input`, false)}`;
 
-  items.forEach(attribute => {
-    const field = attribute.name;
-    const typeOfField = attribute.type;
+  fs.writeFileSync(filename, content);
+};
 
-    if (field === 'id') {
-      return;
-    }
+const mapType = (type: string): string => {
+  switch (type) {
+    case 'string':
+      return 'z.string()';
+    case 'boolean':
+      return 'z.boolean()';
+    case 'number':
+      return 'z.number()';
+    case 'datetime':
+      return 'z.date()';
+    default:
+      return 'z.any()';
+  }
+};
 
-    let validator;
-    switch (typeOfField) {
-      case 'string':
-        validator = '@IsString()';
-        break;
-      case 'number':
-        validator = '@IsInt()';
-        break;
-      case 'boolean':
-        validator = '@IsBoolean()';
-        break;
-      case 'Date':
-        validator = '@IsDate()';
-        content += `\n  @Type(() => Date)`;
-        break;
-      default:
-        validator = `@ValidateNested()`;
-        break;
-    }
-
-    content += `
-  ${validator}
-  ${field}: ${typeOfField};`;
-  });
-
-  content += `\n}\n\n`;
-
-  // Update Model Input
-  content += `export class Update${entityNameCapitalized}Input {`;
-
-  items.forEach(attribute => {
-    const field = attribute.name;
-    const typeOfField = attribute.type;
-
-    if (field === 'id') {
-      return;
-    }
-
-    let validator;
-    switch (typeOfField) {
-      case 'string':
-        validator = '@IsString()';
-        break;
-      case 'number':
-        validator = '@IsInt()';
-        break;
-      case 'boolean':
-        validator = '@IsBoolean()';
-        break;
-      case 'Date':
-        validator = '@IsDate()';
-        content += `\n  @Type(() => Date)`;
-        break;
-      default:
-        validator = `@ValidateNested()`;
-        break;
-    }
-
-    content += `
-  ${validator}
-  ${field}: ${typeOfField};`;
-  });
-
-  content += `\n}\n`;
-
-  generateFile(filename, content);
+const mapRelationship = (relationship: string, type: string): string => {
+  switch (relationship) {
+    case 'ONE_TO_ONE':
+      return mapType(type);
+    case 'ONE_TO_MANY':
+      return `z.array(${mapType(type)})`;
+    case 'MANY_TO_ONE':
+      return mapType(type);
+    case 'MANY_TO_MANY':
+      return `z.array(${mapType(type)})`;
+    default:
+      return 'z.any()';
+  }
 };

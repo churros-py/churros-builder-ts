@@ -1,10 +1,24 @@
+import * as path from 'path';
+import * as fs from 'fs';
+
 import { generateFile } from "../fileGenerator";
 
 const generateEntities = (): void => {
   const filename = 'src/__seedwork/domain/entities.ts';
-  generateFile(filename, `
+  const dirname = path.dirname(filename);
+
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true });
+  }
+
+  const content = `
 // -*- coding: utf-8 -*-
-import { Field, asdict } from 'some-library';
+
+export type Field = {
+  name: string;
+  type: string;
+  required: boolean;
+};
 
 export abstract class Entity {
   protected _set(name: string, value: any): this {
@@ -13,7 +27,8 @@ export abstract class Entity {
   }
 
   public toDict(): Record<string, any> {
-    const entityDict = asdict(this);
+    const entityDict = { ...this } as Record<string, any>;
+    delete entityDict.unique_entity_id; // Assuming you have this field to delete
     entityDict.id = (this as any).id;
     return entityDict;
   }
@@ -22,8 +37,11 @@ export abstract class Entity {
     return (this as any).__dataclass_fields__[entityField];
   }
 }
-`);
+`;
+
+  fs.writeFileSync(filename, content);
 };
+
 
 const generateExceptions = (): void => {
   const filename = 'src/__seedwork/domain/exceptions.ts';
@@ -119,16 +137,19 @@ export interface ValidatorFieldsInterface<PropsValidated> {
 `);
 };
 
-// Generate Value Objects
 const generateValueObjects = (): void => {
   const filename = 'src/__seedwork/domain/valueObjects.ts';
-  generateFile(filename, `
-// -*- coding: utf-8 -*-
-import { Field, fields } from 'some-library';
+  const dirname = path.dirname(filename);
 
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true });
+  }
+
+  const content = `
+// -*- coding: utf-8 -*-
 export abstract class ValueObject {
   public toString(): string {
-    const fieldsName = fields(this).map((field: Field) => field.name);
+    const fieldsName = Object.keys(this);
     if (fieldsName.length === 1) {
       return String((this as any)[fieldsName[0]]);
     }
@@ -138,7 +159,9 @@ export abstract class ValueObject {
     }, {}));
   }
 }
-`);
+`;
+
+  fs.writeFileSync(filename, content);
 };
 
 export const generateDomainSeedwork = (): void => {

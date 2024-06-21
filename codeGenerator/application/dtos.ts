@@ -1,4 +1,4 @@
-import { EntityItem } from '../..';
+import { EntityItem } from '../baseRequest';
 import { generateFile } from '../fileGenerator';
 
 const builtinsTypes: string[] = ['string', 'number', 'boolean', 'Date'];
@@ -6,8 +6,6 @@ const builtinsTypes: string[] = ['string', 'number', 'boolean', 'Date'];
 export const generateDtos = (entityName: string, items: EntityItem[]): void => {
   const filename = `src/${entityName}/application/dtos.ts`;
   const entityNameCapitalized = entityName.charAt(0).toUpperCase() + entityName.slice(1);
-
-  generateFile(`src/${entityName}/application/__init__.ts`, '');
 
   let content = `// -*- coding: utf-8 -*-
 import { IsInt, IsString, IsBoolean, IsDate } from 'class-validator';

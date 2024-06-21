@@ -1,11 +1,8 @@
-import { EntityItem } from "../..";
 import { generateFile } from "../fileGenerator";
 
-export const generateErrors = (entityName: string, items: EntityItem[]): void => {
+export const generateErrors = (entityName: string): void => {
   const filename = `src/${entityName}/application/errors.ts`;
   const entityNameCapitalized = entityName.charAt(0).toUpperCase() + entityName.slice(1);
-
-  generateFile(`src/${entityName}/application/__init__.ts`, '');
 
   generateFile(filename,
     `// -*- coding: utf-8 -*-

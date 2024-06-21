@@ -7,8 +7,6 @@ const generateEntities = (): void => {
 import { Field, asdict } from 'some-library';
 
 export abstract class Entity {
-  private uniqueEntityId: string;
-
   protected _set(name: string, value: any): this {
     (this as any)[name] = value;
     return this;
@@ -16,7 +14,6 @@ export abstract class Entity {
 
   public toDict(): Record<string, any> {
     const entityDict = asdict(this);
-    delete entityDict.uniqueEntityId;
     entityDict.id = (this as any).id;
     return entityDict;
   }
@@ -28,7 +25,6 @@ export abstract class Entity {
 `);
 };
 
-// Generate Exceptions
 const generateExceptions = (): void => {
   const filename = 'src/__seedwork/domain/exceptions.ts';
   generateFile(filename, `

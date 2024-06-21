@@ -1,17 +1,17 @@
-import { EntityItem } from "../..";
 import { generateDtos } from "../application/dtos";
 import { generateErrors } from "../application/errors";
+import { EntityItem } from "../baseRequest";
 import { generateFile } from "../fileGenerator";
 
 export const generateRouters = (entityName: string, items: EntityItem[]): void => {
-  generateErrors(entityName, items);
+  generateErrors(entityName);
   generateDtos(entityName, items);
 
   const modelNameMin = entityName;
   const modelName = `${entityName.charAt(0).toUpperCase()}${entityName.slice(1)}`;
 
   const filename = `src/infra/api/routers/${modelNameMin}.ts`;
-  generateFile('src/infra/api/routers/__init__.ts',
+  generateFile('src/infra/api/routers/index.ts',
     `export { router as router_${modelNameMin}s } from './${modelNameMin}';\n`
   );
 
@@ -39,7 +39,7 @@ router.get('/${modelNameMin}s/:${modelNameMin}_id', async (req: Request, res: Re
   const db = getDb();
   const ${modelNameMin} = await ${modelNameMin}Repository.findById(db, ${modelNameMin}_id);
   if (!${modelNameMin}) {
-    return res.status(404).json(${modelName}NotFound());
+    return res.status(404).json(new ${modelName}NotFound());
   }
   res.json({ ${modelNameMin} });
 });
@@ -56,7 +56,7 @@ router.patch('/${modelNameMin}s', async (req: Request, res: Response) => {
   const db = getDb();
   const ${modelNameMin} = await ${modelNameMin}Repository.findById(db, input.id);
   if (!${modelNameMin}) {
-    return res.status(404).json(${modelName}NotFound());
+    return res.status(404).json(new ${modelName}NotFound());
   }
   const updated_${modelNameMin} = await ${modelNameMin}Repository.update(db, input);
   res.json({ message: 'updated', ${modelNameMin}: updated_${modelNameMin} });
@@ -67,7 +67,7 @@ router.delete('/${modelNameMin}s/:${modelNameMin}_id', async (req: Request, res:
   const db = getDb();
   const ${modelNameMin} = await ${modelNameMin}Repository.findById(db, ${modelNameMin}_id);
   if (!${modelNameMin}) {
-    return res.status(404).json(${modelName}NotFound());
+    return res.status(404).json(new ${modelName}NotFound());
   }
   await ${modelNameMin}Repository.delete(db, ${modelNameMin}_id);
   res.json({ message: 'deleted' });

@@ -30,7 +30,7 @@ const router = Router();
 router.get('/${modelNameMin}s', async (req: Request, res: Response) => {
   const { skip = 0, limit = 10 } = req.query;
   const db = getDb();
-  const ${modelNameMin}s = ${modelNameMin}Repository.findAll(db, Number(skip), Number(limit));
+  const ${modelNameMin}s = ${modelName}Repository.findAll(db, Number(skip), Number(limit));
   res.json({ ${modelNameMin}s });
 });
 

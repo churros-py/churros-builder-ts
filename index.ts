@@ -3,8 +3,10 @@ import { generateRouters } from './codeGenerator/infra/routers';
 import { generateUseCases } from './codeGenerator/seedwork/application';
 import { Entity, EntityItem, Relationship } from './codeGenerator/baseRequest';
 import { generateEntity } from './codeGenerator/domain/entities';
-import { generateRepository } from './codeGenerator/domain/repositories';
+import { generateDomainRepository } from './codeGenerator/domain/repositories';
 import { generateMain } from './codeGenerator/main';
+import { generateRepository } from './codeGenerator/infra/repository';
+import { generateModel } from './codeGenerator/infra/models';
 
 const userItems: EntityItem[] = [
   { name: "name", type: "string" },
@@ -39,7 +41,9 @@ generateDomainSeedwork()
 generateUseCases()
 entities.forEach(entity => {
   generateEntity(entity.name, entity.items);
-  generateRepository(entity.name);
+  generateDomainRepository(entity.name);
+  generateRepository(entity.name, entity.items)
+  generateModel(entity.name, entity.items)
   generateRouters(entity.name, entity.items);
 });
 generateMain(entities.map(entity => entity.name));

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { capitalize } from '../baseRequest';
 
-export const generateRepository = (entityName: string): void => {
+export const generateDomainRepository = (entityName: string): void => {
   const repositoryDir = `src/${entityName}/domain/repositories`;
   const repositoryFile = path.join(repositoryDir, `${entityName}Repository.ts`);
 
